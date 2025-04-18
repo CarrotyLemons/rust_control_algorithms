@@ -5,6 +5,7 @@ version = 4
 [[package]]
 name = "helper_tools"
 version = "0.1.0"
+source = "git+https://github.com/CarrotyLemons/rust_helper_tools.git#55efb4d83f069e68efe744e3aaff34e822f34739"
 
 [[package]]
 name = "pid_controller"

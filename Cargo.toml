@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-helper_tools = { path = "../helper_tools"}
+helper_tools = { git = "https://github.com/CarrotyLemons/rust_helper_tools.git"}
