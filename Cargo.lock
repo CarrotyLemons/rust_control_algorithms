@@ -3,13 +3,13 @@
 version = 4
 
 [[package]]
-name = "helper_tools"
-version = "0.1.0"
-source = "git+https://github.com/CarrotyLemons/rust_helper_tools.git#55efb4d83f069e68efe744e3aaff34e822f34739"
-
-[[package]]
-name = "pid_controller"
+name = "control_algorithms"
 version = "0.1.0"
 dependencies = [
- "helper_tools",
+ "rust_helper_tools",
 ]
+
+[[package]]
+name = "rust_helper_tools"
+version = "0.1.0"
+source = "git+https://github.com/CarrotyLemons/rust_helper_tools.git#5a0bec55965a69d4e161fa49d91fcca632599c0d"

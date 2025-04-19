@@ -1,26 +1,5 @@
 #![no_std]
-use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-
-pub trait Floats:
-    Sub<Output = Self>
-    + SubAssign
-    + Add<Output = Self>
-    + AddAssign
-    + Neg<Output = Self>
-    + Mul<Output = Self>
-    + MulAssign
-    + Div<Output = Self>
-    + DivAssign
-    + Copy
-    + Sized
-    + PartialOrd
-{
-}
-
-//impl Floats for f16 {}
-impl Floats for f32 {}
-impl Floats for f64 {}
-//impl Floats for f128 {}
+use rust_helper_tools::Floats;
 
 pub struct Pid<T>
 where
@@ -66,7 +45,7 @@ where
 mod tests {
     use super::*;
     extern crate std;
-    use helper_tools::assert_flexible;
+    use rust_helper_tools::assert_flexible;
 
     #[test]
     // Test the use of an exclusively proportional PID
