@@ -14,6 +14,4 @@ PID controllers make sense when applied to something like the acceleration of an
 
 They rely on calculating the error relevant to their goal and creating different terms (proportional, integral and derivative) to approach the solution in different ways.
 
-# Derivative filterings
-
 # Anti-windup scheme

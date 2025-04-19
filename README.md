@@ -7,5 +7,5 @@ It includes some non-extensive unit tests and one output of a PID running proces
 The `PID_visualiser.py` can be run on the output file to show the PID display of the example case in the file.
 
 # Potential future implementation
-- Derivative filtering
+- Derivative filtering (imported from filtering crate)
 - Anti windup scheme
