@@ -49,8 +49,7 @@ where
         }
     }
 
-    pub fn step(&mut self, measured: T, time_step: T) -> T
-    {
+    pub fn step(&mut self, measured: T, time_step: T) -> T {
         let error = self.target - measured;
         self.cumulative_error += error * time_step;
         let result = self.kp * error
@@ -103,20 +102,23 @@ mod tests {
         const TARGET_MAXIMUM: f64 = 5.0; //Amplitude
         const SIMULATION_TIME: i64 = 100; //Seconds
         const SAMPLES_PER_SECOND: i64 = 50; //Hz
-        const INCREMENT: f64 = 1.0/SAMPLES_PER_SECOND as f64; //Seconds
+        const INCREMENT: f64 = 1.0 / SAMPLES_PER_SECOND as f64; //Seconds
 
         //All the external variables, like target and the plant function
         struct Parameters<T>
-        where T: Floats {
+        where
+            T: Floats,
+        {
             target_maximum: T,
             plant_location: T,
-            plant_velocity: T
+            plant_velocity: T,
         }
 
-        impl <T> Parameters<T> 
-        where T: Floats + From<f64>
+        impl<T> Parameters<T>
+        where
+            T: Floats + From<f64>,
         {
-            fn find_target(&self, time: T) -> T{
+            fn find_target(&self, time: T) -> T {
                 if time > T::from(INCREMENT * 10.0) {
                     self.target_maximum
                 } else {
@@ -125,10 +127,9 @@ mod tests {
             }
 
             fn plant_function(&mut self, input: T) -> T
-            where T: Floats 
             {
-                self.plant_velocity += input*T::from(INCREMENT);
-                self.plant_location += self.plant_velocity*T::from(INCREMENT);
+                self.plant_velocity += input * T::from(INCREMENT);
+                self.plant_location += self.plant_velocity * T::from(INCREMENT);
                 self.plant_location
             }
         }
@@ -138,24 +139,33 @@ mod tests {
 
         let mut f = File::create_new("PID_simulation.csv")?;
 
-        let mut external = Parameters{
+        let mut external = Parameters {
             target_maximum: TARGET_MAXIMUM,
             plant_location: 0.0,
-            plant_velocity: 0.0
+            plant_velocity: 0.0,
         };
 
         let mut controller = Pid::new(0.8, 0.1, 0.01, 0.0, 0.0, 0.0);
         let mut measured: f64 = 0.0;
 
-        f.write_all("Time, Target, Measured, Previous Error, Cumulative Error, Output\n".as_bytes())?;
+        f.write_all(
+            "Time, Target, Measured, Previous Error, Cumulative Error, Output\n".as_bytes(),
+        )?;
 
-        for index in 1..SIMULATION_TIME*SAMPLES_PER_SECOND {
+        for index in 1..SIMULATION_TIME * SAMPLES_PER_SECOND {
             let time = index as f64 * INCREMENT;
             controller.target = external.find_target(time);
 
             measured = external.plant_function(controller.step(measured, INCREMENT));
 
-            let line = std::format!("{}, {}, {}, {} ,{}\n", time, controller.target, measured, controller.previous_error, controller.cumulative_error);
+            let line = std::format!(
+                "{}, {}, {}, {} ,{}\n",
+                time,
+                controller.target,
+                measured,
+                controller.previous_error,
+                controller.cumulative_error
+            );
 
             f.write_all(line.as_bytes())?;
         }
