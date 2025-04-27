@@ -12,6 +12,7 @@ The `PID_visualiser.py` can be run on the output file to show the PID display of
     - Output diagrams for both with and without
 - Clamping to prevent integral windup
     - Output diagrams for both with and without
+- Allowing measurement of process variable for derivative term instead of error
 
 # Usage
 ## PID
