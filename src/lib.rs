@@ -1,4 +1,6 @@
 #![no_std]
+use core::marker::PhantomData;
+
 use rust_helper_tools::Floats;
 
 pub struct Pid<T>
@@ -11,20 +13,23 @@ where
     pub target: T,
     pub cumulative_error: T,
     pub previous_error: T,
+    pub _marker: PhantomData<T>,
 }
 
 impl<T> Pid<T>
 where
     T: Floats,
 {
-    pub fn new(kp: T, kd: T, ki: T, target: T, cumulative_error: T, previous_error: T) -> Self {
+    //Returns a blank Pid struct with default values
+    pub fn blank() -> Self{
         Pid {
-            kp,
-            kd,
-            ki,
-            target,
-            cumulative_error,
-            previous_error,
+            kp: T::default(),
+            kd: T::default(),
+            ki: T::default(),
+            target: T::default(),
+            cumulative_error: T::default(),
+            previous_error: T::default(),
+            _marker: PhantomData,
         }
     }
 

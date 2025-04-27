@@ -12,4 +12,4 @@ dependencies = [
 [[package]]
 name = "rust_helper_tools"
 version = "0.1.0"
-source = "git+https://github.com/CarrotyLemons/rust_helper_tools.git#5a0bec55965a69d4e161fa49d91fcca632599c0d"
+source = "git+https://github.com/CarrotyLemons/rust_helper_tools.git#689c6661ab62559fd13da9ab10140dfbe1990a4d"

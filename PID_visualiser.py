@@ -1,6 +1,5 @@
 import csv
 import matplotlib.pyplot as plt
-import os
 
 csv_path = "PID_simulation.csv"
 

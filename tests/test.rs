@@ -6,7 +6,11 @@ mod tests {
     #[test]
     // Test the use of an exclusively proportional PID
     fn test_proportional_pid() {
-        let mut controller = Pid::new(0.2 as f64, 0.0, 0.0, 15.2, 0.0, 0.0);
+        let mut controller = Pid {
+            kp: 0.2,
+            target: 15.2,
+            ..Pid::blank()
+        };
         let result = controller.step(3.5 as f64, 0.01);
 
         assert_eq!(result, 0.2 * (15.2 - 3.5))
@@ -15,7 +19,12 @@ mod tests {
     #[test]
     // Test the use of an exclusively derivative PID
     fn test_derivative_pid() {
-        let mut controller = Pid::new(0 as f64, 2.2, 0.0, 12.0, 0.0, -0.1);
+        let mut controller = Pid {
+            kd: 2.2,
+            target: 12.0,
+            previous_error: -0.1,
+            ..Pid::blank()
+        };
         let result = controller.step(0.05 as f64, 0.01);
 
         assert_flexible!(result, 2.2 * ((12.0 - 0.05) + 0.1) / (0.01), 0.01)
@@ -24,7 +33,12 @@ mod tests {
     #[test]
     // Test the use of an exclusively integral PID
     fn test_integral_pid() {
-        let mut controller = Pid::new(0 as f64, 0.0, 0.5, 6.0, 3.0, 0.0);
+        let mut controller = Pid {
+            ki: 0.5,
+            target: 6.0,
+            cumulative_error: 3.0,
+            ..Pid::blank()
+        };
         let result = controller.step(0.05 as f64, 0.01);
 
         assert_flexible!(result, ((3.0) + (6.0 - 0.05) * 0.01) * 0.5, 0.01)
@@ -80,7 +94,12 @@ mod tests {
             plant_velocity: 0.0,
         };
 
-        let mut controller = Pid::new(0.8, 0.1, 0.01, 0.0, 0.0, 0.0);
+        let mut controller = Pid {
+            kp: 0.8,
+            kd: 0.1,
+            ki: 0.01,
+            ..Pid::blank()
+        };
         let mut measured: f64 = 0.0;
 
         f.write_all(
