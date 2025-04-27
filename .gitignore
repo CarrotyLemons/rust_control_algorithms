@@ -1,2 +1,4 @@
 /target
 .DS_STORE
+#Don't store large generated display files
+*.csv
