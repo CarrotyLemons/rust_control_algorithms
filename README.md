@@ -26,7 +26,7 @@ let mut controller = Pid {
 };
 ```
 
-The step method can then be called to iterate the pid with the current measured result
+The `.step` method can then be called to iterate the pid with the current measured result
 
 ```rs
 let result = controller.step(3.5 as f64, 0.01);
