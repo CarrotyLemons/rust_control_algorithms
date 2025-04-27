@@ -72,7 +72,7 @@ mod tests {
         use std::fs::File;
         use std::io::Write;
 
-        let mut f = File::create_new("PID_simulation.csv")?;
+        let mut f = File::create("PID_simulation.csv")?;
 
         let mut external = Parameters {
             target_maximum: TARGET_MAXIMUM,

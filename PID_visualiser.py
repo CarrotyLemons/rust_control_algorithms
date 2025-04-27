@@ -21,5 +21,3 @@ plt.title("PID rust simulation output")
 plt.legend()
 plt.grid()
 plt.show()
-
-os.remove(csv_path)
