@@ -7,8 +7,8 @@ This is a rust library implementing a PID controller. It has the following featu
 While I have tried to make the library code nice to work with, the tests have not had the same effort.
 
 It includes some non-extensive tests:
-    - Individual checks of the P, I and D functions
-    - A non-testing output of a PID controller with clamping enabled, try disabling the clamping to see some wild instability (the output of the PID is constrained to show how clamping might be useful)
+- Individual checks of the P, I and D functionality
+- A non-testing output of a PID controller with clamping enabled, try disabling the clamping to see some wild instability (the output of the PID is constrained to show how clamping might be useful)
 
 The `PID_visualiser.py` can be run on the output file to show the PID display of the example case.
 
