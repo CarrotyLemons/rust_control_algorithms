@@ -19,6 +19,8 @@ When the plant process has a time delay, or there are sharp changes in the goal 
 
 This can be mitigated by using anti-windup techniques such as clamping, back-calculation and having setpoint ramping to smooth the setpoint change (not effective in the case of a time delayed plant process).
 
+Windup occurs when the output of the PID controller exceeds the bounds the plant is capable of producing, *saturating* the output. One solution to this implemented here is clamping, which entirely disables the accumulation of error and the output of the integral term until the output of the PID controller return back into the set bounds.
+
 # Filtering (the derivative term)
 Filtering the input to the derivative term of the PID controller can help remove a lot of instability if the PID controller is receiving noisy data. 
 

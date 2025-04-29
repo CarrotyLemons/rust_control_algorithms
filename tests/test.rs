@@ -1,5 +1,5 @@
 mod tests {
-    use control_algorithms::Pid;
+    use control_algorithms::{Pid, Clamping};
     use rust_helper_tools::{assert_flexible, Floats};
     extern crate std;
 
@@ -52,6 +52,8 @@ mod tests {
         const SIMULATION_TIME: i64 = 100; //Seconds
         const SAMPLES_PER_SECOND: i64 = 50; //Hz
         const INCREMENT: f64 = 1.0 / SAMPLES_PER_SECOND as f64; //Seconds
+        const PLANT_LOWER_LIMIT: f64 = -1.5;
+        const PLANT_UPPER_LIMIT: f64 = 1.5;
 
         //All the external variables, like target and the plant function
         struct Parameters<T>
@@ -75,8 +77,13 @@ mod tests {
                 }
             }
 
-            fn plant_function(&mut self, input: T) -> T
+            fn plant_function(&mut self, mut input: T) -> T
             {
+                if input < T::from(PLANT_LOWER_LIMIT) {
+                    input = T::from(-1.5);
+                } else if input > T::from(PLANT_UPPER_LIMIT) {
+                    input = T::from(1.5);
+                }
                 self.plant_velocity += input * T::from(INCREMENT);
                 self.plant_location += self.plant_velocity * T::from(INCREMENT);
                 self.plant_location
@@ -97,13 +104,14 @@ mod tests {
         let mut controller = Pid {
             kp: 0.8,
             kd: 0.1,
-            ki: 0.01,
+            ki: 0.05,
+            clamping: Clamping::BothLimits(-1.5, 1.5),
             ..Pid::blank()
         };
         let mut measured: f64 = 0.0;
 
         f.write_all(
-            "Time, Target, Measured, Previous Error, Cumulative Error, Output\n".as_bytes(),
+            "Time, Target, Measured, Previous Error, Cumulative Error, Output, Clamping\n".as_bytes(),
         )?;
 
         for index in 1..SIMULATION_TIME * SAMPLES_PER_SECOND {
@@ -113,12 +121,14 @@ mod tests {
             measured = external.plant_function(controller.step(measured, INCREMENT));
 
             let line = std::format!(
-                "{}, {}, {}, {} ,{}\n",
+                "{}, {}, {}, {} ,{}, {}, {}\n",
                 time,
                 controller.target,
                 measured,
                 controller.previous_error,
-                controller.cumulative_error
+                controller.cumulative_error,
+                controller.output,
+                controller.clamping.exceeded(controller.output)
             );
 
             f.write_all(line.as_bytes())?;
