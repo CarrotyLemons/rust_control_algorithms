@@ -70,7 +70,7 @@ mod tests {
             T: Floats + From<f64>,
         {
             fn find_target(&self, time: T) -> T {
-                if time > T::from(INCREMENT * 10.0) {
+                if time > T::from(INCREMENT * 1000.0) {
                     self.target_maximum
                 } else {
                     T::from(0.0)

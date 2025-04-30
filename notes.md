@@ -24,4 +24,4 @@ Windup occurs when the output of the PID controller exceeds the bounds the plant
 # Filtering (the derivative term)
 Filtering the input to the derivative term of the PID controller can help remove a lot of instability if the PID controller is receiving noisy data. 
 
-The derivative term can also cause unstable behaviour when dealing with sudden changes associated with setpoint. Setpoint ramping can resolve this as well. This can be mitigated by instead taking the derivative of the measured process variable instead of the error.
+The derivative term can also cause unstable behaviour when dealing with sudden changes associated with setpoint. Setpoint ramping can resolve this as well. This can be mitigated by instead taking the negative derivative of the measured process variable instead of the error.

@@ -3,6 +3,7 @@
 This is a rust library implementing a PID controller. It has the following features
 - Basic PID functioning
 - Clamping as wind-up control
+- Ability to calculate derivative from input instead of error as derivative-kick control
 
 While I have tried to make the library code nice to work with, the tests have not had the same effort.
 
@@ -15,7 +16,6 @@ The `PID_visualiser.py` can be run on the output file to show the PID display of
 # Future implementation
 - Derivative filtering (imported from filtering crate)
     - Output diagrams for both with and without
-- Allowing measurement of process variable for derivative term instead of error
 
 # Usage
 ## PID

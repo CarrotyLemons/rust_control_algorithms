@@ -44,6 +44,7 @@ where
     pub cumulative_error: T,
     pub previous_error: T,
     pub output: T,
+    pub derivative_on_measurement: bool,
     pub clamping: Clamping<T>,
     pub _marker: PhantomData<T>,
 }
@@ -58,10 +59,11 @@ where
             kp: T::default(),
             kd: T::default(),
             ki: T::default(),
-            target: T::default(),
-            cumulative_error: T::default(),
-            previous_error: T::default(),
-            output: T::default(),
+            target: T::default(), //PID target value
+            cumulative_error: T::default(), //Integral of error
+            previous_error: T::default(), //Previous calculated error
+            output: T::default(), //Previous PID output
+            derivative_on_measurement: false, //Derivative based on measurement instead of error
             clamping: Clamping::None,
             _marker: PhantomData,
         }
@@ -69,14 +71,21 @@ where
 
     pub fn step(&mut self, measured: T, time_step: T) -> T {
         let error = self.target - measured;
-        let mut result = self.kp * error + self.kd * ((error - self.previous_error) / time_step);
+        let mut result = self.kp * error;
 
         if !self.clamping.exceeded(self.output) {
             self.cumulative_error += error * time_step;
             result += self.ki * self.cumulative_error;
         }
 
-        self.previous_error = error;
+        if self.derivative_on_measurement {
+            result += self.kd * -((measured - self.previous_error) / time_step);
+            self.previous_error = measured;
+        } else {
+            result += self.kd * ((error - self.previous_error) / time_step);
+            self.previous_error = error;
+        }
+
         self.output = result;
 
         result
