@@ -1,23 +1,16 @@
 #![no_std]
-use core::marker::PhantomData;
 
-use rust_helper_tools::Floats;
-
-pub enum Clamping<T> 
-where
-    T: Floats,
+pub enum Clamping 
 {
     None,
-    LowerLimit(T),
-    UpperLimit(T),
-    BothLimits(T, T)
+    LowerLimit(f64),
+    UpperLimit(f64),
+    BothLimits(f64, f64)
 }
 
-impl<T> Clamping<T>
-where
-    T: Floats,
+impl Clamping
 {
-    pub fn exceeded(&self, value: T) -> bool{
+    pub fn exceeded(&self, value: f64) -> bool{
         match &self {
             Clamping::None => false,
             Clamping::UpperLimit(upper_limit) => {
@@ -33,60 +26,47 @@ where
     }
 }
 
-pub struct Pid<T>
-where
-    T: Floats,
+pub struct Pid
 {
-    pub kp: T,
-    pub kd: T,
-    pub ki: T,
-    pub target: T,
-    pub cumulative_error: T,
-    pub previous_error: T,
-    pub output: T,
-    pub derivative_on_measurement: bool,
-    pub clamping: Clamping<T>,
-    pub _marker: PhantomData<T>,
+    pub kp: f64,
+    pub kd: f64,
+    pub ki: f64,
+    pub target: f64,
+    pub cumulative_error: f64,
+    pub previous_measurement: f64,
+    pub clamping: Clamping,
 }
 
-impl<T> Pid<T>
-where
-    T: Floats,
-{
-    //Returns a blank Pid struct with default values
+impl Pid {
+    // Returns a blank Pid struct with default values
     pub fn blank() -> Self{
         Pid {
-            kp: T::default(),
-            kd: T::default(),
-            ki: T::default(),
-            target: T::default(), //PID target value
-            cumulative_error: T::default(), //Integral of error
-            previous_error: T::default(), //Previous calculated error
-            output: T::default(), //Previous PID output
-            derivative_on_measurement: false, //Derivative based on measurement instead of error
+            kp: 0.0,
+            kd: 0.0,
+            ki: 0.0,
+            target: 0.0, // PID target value
+            cumulative_error: 0.0, // Integral of error
+            previous_measurement: 0.0, // Used to calculate the derivative of change
             clamping: Clamping::None,
-            _marker: PhantomData,
         }
     }
 
-    pub fn step(&mut self, measured: T, time_step: T) -> T {
+    pub fn step(&mut self, measured: f64, time_step: f64) -> f64 {
         let error = self.target - measured;
+        
+        // Proportional calculation
         let mut result = self.kp * error;
 
-        if !self.clamping.exceeded(self.output) {
+        // Integral calculation with clamping windup control
+        if !self.clamping.exceeded(self.cumulative_error) {
             self.cumulative_error += error * time_step;
             result += self.ki * self.cumulative_error;
         }
 
-        if self.derivative_on_measurement {
-            result += self.kd * -((measured - self.previous_error) / time_step);
-            self.previous_error = measured;
-        } else {
-            result += self.kd * ((error - self.previous_error) / time_step);
-            self.previous_error = error;
-        }
-
-        self.output = result;
+        // Derivative calculation
+        // Takes the derivative of the process variable to prevent issues when the target changes.
+        result += self.kd * ((measured - self.previous_measurement) / time_step);
+        self.previous_measurement = measured;
 
         result
     }

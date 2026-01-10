@@ -1,6 +1,5 @@
 mod tests {
     use control_algorithms::{Pid, Clamping};
-    use rust_helper_tools::{assert_flexible, Floats};
     extern crate std;
 
     #[test]
@@ -22,12 +21,12 @@ mod tests {
         let mut controller = Pid {
             kd: 2.2,
             target: 12.0,
-            previous_error: -0.1,
+            previous_measurement: -0.1,
             ..Pid::blank()
         };
         let result = controller.step(0.05 as f64, 0.01);
 
-        assert_flexible!(result, 2.2 * ((12.0 - 0.05) + 0.1) / (0.01), 0.01)
+        assert_eq!(result, 2.2 * (0.05 -- 0.1) / (0.01))
     }
 
     #[test]
@@ -39,54 +38,37 @@ mod tests {
             cumulative_error: 3.0,
             ..Pid::blank()
         };
-        let result = controller.step(0.05 as f64, 0.01);
+        let result = controller.step(0.05_f64, 0.01_f64);
 
-        assert_flexible!(result, ((3.0) + (6.0 - 0.05) * 0.01) * 0.5, 0.01)
+        assert_eq!(result, ((3.0_f64) + (6.0_f64 - 0.05_f64) * 0.01_f64) * 0.5_f64)
     }
 
     #[test]
-    //In this simulation the assumed process being controlled is velocity
-    //The value is position
+    // In this simulation the assumed process being controlled is velocity
+    // The value is position
     fn output_simulation() -> std::io::Result<()> {
-        const TARGET_MAXIMUM: f64 = 5.0; //Amplitude
-        const SIMULATION_TIME: i64 = 100; //Seconds
-        const SAMPLES_PER_SECOND: i64 = 50; //Hz
-        const INCREMENT: f64 = 1.0 / SAMPLES_PER_SECOND as f64; //Seconds
-        const PLANT_LOWER_LIMIT: f64 = -1.5;
-        const PLANT_UPPER_LIMIT: f64 = 1.5;
+        const SIMULATION_TIME: f64 = 100.0;
+        const SIMULATION_STEP: f64 = 0.01;
 
-        //All the external variables, like target and the plant function
-        struct Parameters<T>
-        where
-            T: Floats,
+        struct Parameters
         {
-            target_maximum: T,
-            plant_location: T,
-            plant_velocity: T,
+            time_delayed_output: Vec<f64>
         }
 
-        impl<T> Parameters<T>
-        where
-            T: Floats + From<f64>,
+        impl Parameters
         {
-            fn find_target(&self, time: T) -> T {
-                if time > T::from(INCREMENT * 1000.0) {
-                    self.target_maximum
+            fn calculate_target(&self, time: f64) -> f64 {
+                if time > 10.0 {
+                    75.0
                 } else {
-                    T::from(0.0)
+                    0.0
                 }
             }
 
-            fn plant_function(&mut self, mut input: T) -> T
+            fn plant_function(&mut self, input: f64) -> f64
             {
-                if input < T::from(PLANT_LOWER_LIMIT) {
-                    input = T::from(-1.5);
-                } else if input > T::from(PLANT_UPPER_LIMIT) {
-                    input = T::from(1.5);
-                }
-                self.plant_velocity += input * T::from(INCREMENT);
-                self.plant_location += self.plant_velocity * T::from(INCREMENT);
-                self.plant_location
+                self.time_delayed_output.push(input);
+                self.time_delayed_output.pop().unwrap()
             }
         }
 
@@ -96,16 +78,15 @@ mod tests {
         let mut f = File::create("PID_simulation.csv")?;
 
         let mut external = Parameters {
-            target_maximum: TARGET_MAXIMUM,
-            plant_location: 0.0,
-            plant_velocity: 0.0,
+            time_delayed_output: Vec::with_capacity(10),
         };
 
         let mut controller = Pid {
-            kp: 0.8,
-            kd: 0.1,
+            kp: 0.1,
+            kd: 0.0,
             ki: 0.05,
-            clamping: Clamping::BothLimits(-1.5, 1.5),
+            // clamping: Clamping::BothLimits(-15.0, 15.0),
+            clamping: Clamping::None,
             ..Pid::blank()
         };
         let mut measured: f64 = 0.0;
@@ -114,21 +95,19 @@ mod tests {
             "Time, Target, Measured, Previous Error, Cumulative Error, Output, Clamping\n".as_bytes(),
         )?;
 
-        for index in 1..SIMULATION_TIME * SAMPLES_PER_SECOND {
-            let time = index as f64 * INCREMENT;
-            controller.target = external.find_target(time);
+        for index in 1..(SIMULATION_TIME / SIMULATION_STEP) as i64 {
+            let time = index as f64 * SIMULATION_STEP;
+            controller.target = external.calculate_target(time);
 
-            measured = external.plant_function(controller.step(measured, INCREMENT));
+            measured = external.plant_function(controller.step(measured, SIMULATION_STEP));
 
             let line = std::format!(
-                "{}, {}, {}, {} ,{}, {}, {}\n",
+                "{}, {}, {}, {}, {}\n",
                 time,
                 controller.target,
                 measured,
-                controller.previous_error,
                 controller.cumulative_error,
-                controller.output,
-                controller.clamping.exceeded(controller.output)
+                controller.clamping.exceeded(controller.cumulative_error)
             );
 
             f.write_all(line.as_bytes())?;

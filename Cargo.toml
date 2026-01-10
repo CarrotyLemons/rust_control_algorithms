@@ -2,6 +2,3 @@
 name = "control_algorithms"
 version = "0.1.0"
 edition = "2021"
-
-[dependencies]
-rust_helper_tools = { git = "https://github.com/CarrotyLemons/rust_helper_tools.git"}
