@@ -75,7 +75,7 @@ mod tests {
         use std::fs::File;
         use std::io::Write;
 
-        let mut f = File::create("PID_simulation.csv")?;
+        let mut f = File::create("tests/PID_simulation.csv")?;
 
         let mut external = Parameters {
             time_delayed_output: Vec::with_capacity(10),
