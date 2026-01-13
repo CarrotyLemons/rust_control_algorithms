@@ -31,10 +31,11 @@ pub struct Pid
     pub kp: f64,
     pub kd: f64,
     pub ki: f64,
-    pub target: f64,
-    pub cumulative_error: f64,
-    pub previous_measurement: f64,
-    pub clamping: Clamping,
+    pub target: f64, // Set point
+    pub process_variable: f64, // The current output of the model
+    pub cumulative_error: f64, // Used for I term calculations
+    pub previous_measurement: f64, // Used for D term calculations
+    pub clamping: Clamping, // Used for clamping in I term calculations
 }
 
 impl Pid {
@@ -45,6 +46,7 @@ impl Pid {
             kd: 0.0,
             ki: 0.0,
             target: 0.0, // PID target value
+            process_variable: 0.0, // Current model output
             cumulative_error: 0.0, // Integral of error
             previous_measurement: 0.0, // Used to calculate the derivative of change
             clamping: Clamping::None,
@@ -55,19 +57,21 @@ impl Pid {
         let error = self.target - measured;
         
         // Proportional calculation
-        let mut result = self.kp * error;
+        let mut change_output = self.kp * error;
 
         // Integral calculation with clamping windup control
         if !self.clamping.exceeded(self.cumulative_error) {
             self.cumulative_error += error * time_step;
-            result += self.ki * self.cumulative_error;
+            change_output += self.ki * self.cumulative_error;
         }
 
         // Derivative calculation
         // Takes the derivative of the process variable to prevent issues when the target changes.
-        result += self.kd * ((measured - self.previous_measurement) / time_step);
+        change_output += self.kd * ((measured - self.previous_measurement) / time_step);
         self.previous_measurement = measured;
 
-        result
+        self.process_variable += change_output;
+
+        self.process_variable
     }
 }

@@ -1,4 +1,6 @@
 mod tests {
+    use std::collections::VecDeque;
+
     use control_algorithms::{Pid, Clamping};
     extern crate std;
 
@@ -47,19 +49,19 @@ mod tests {
     // In this simulation the assumed process being controlled is velocity
     // The value is position
     fn output_simulation() -> std::io::Result<()> {
-        const SIMULATION_TIME: f64 = 100.0;
-        const SIMULATION_STEP: f64 = 0.01;
+        const SIMULATION_TIME: f64 = 0.5;
+        const SIMULATION_STEP: f64 = 0.001;
 
         struct Parameters
         {
-            time_delayed_output: Vec<f64>
+            time_delayed_output: VecDeque<f64>
         }
 
         impl Parameters
         {
             fn calculate_target(&self, time: f64) -> f64 {
-                if time > 10.0 {
-                    75.0
+                if time > 0.2 {
+                    10.0
                 } else {
                     0.0
                 }
@@ -67,8 +69,8 @@ mod tests {
 
             fn plant_function(&mut self, input: f64) -> f64
             {
-                self.time_delayed_output.push(input);
-                self.time_delayed_output.pop().unwrap()
+                self.time_delayed_output.push_back(input);
+                self.time_delayed_output.pop_front().unwrap()
             }
         }
 
@@ -78,13 +80,13 @@ mod tests {
         let mut f = File::create("tests/PID_simulation.csv")?;
 
         let mut external = Parameters {
-            time_delayed_output: Vec::with_capacity(10),
+            time_delayed_output: vec![0.0; 10].try_into().unwrap(),
         };
 
         let mut controller = Pid {
             kp: 0.1,
             kd: 0.0,
-            ki: 0.05,
+            ki: 0.0,
             // clamping: Clamping::BothLimits(-15.0, 15.0),
             clamping: Clamping::None,
             ..Pid::blank()
@@ -92,7 +94,7 @@ mod tests {
         let mut measured: f64 = 0.0;
 
         f.write_all(
-            "Time, Target, Measured, Previous Error, Cumulative Error, Output, Clamping\n".as_bytes(),
+            "Time, Target, Measured, Cumulative Error, Clamping\n".as_bytes(),
         )?;
 
         for index in 1..(SIMULATION_TIME / SIMULATION_STEP) as i64 {
