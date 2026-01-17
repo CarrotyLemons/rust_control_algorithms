@@ -7,13 +7,14 @@ This is a rust library implementing a PID controller. It has the following featu
 
 It includes some non-extensive tests:
 - Individual checks of the P, I and D functionality
-- A non-gated output of a PID controller on a time delay plant process.
+- A non-gated output of an example controller on a time delay plant process.
 
 The `PID_visualiser.py` can be run on the output file to show the PID display of the example case.
 
+![PID simulation output](tests/visualiser_output.png)
+
 # Future implementation
-- Derivative filtering (imported from filtering crate)
-    - Output diagrams for both with and without
+- Derivative filtering (imported from a filtering crate)
 
 # Usage
 ## PID
